@@ -3,9 +3,6 @@ let fs = require("fs");
 let path = require('path');
 let fse = require("fs-extra");
 function unrarFile(filePath, cb) {
-    // let filePath = './data/rar'+crypto.md5Encrypt(buf);
-    // fse.ensureFileSync(filePath);
-    // let un
     let dir = path.join(process.cwd(), "./data/unrar");
     fse.ensureDir(dir)
         .then(() => {
@@ -14,7 +11,8 @@ function unrarFile(filePath, cb) {
             cb();
         })
         .catch(err => {
-            console.error(filePath, "===>", err)
+            console.error(filePath, "===>", err);
+            cb(err);
         })
 }
 

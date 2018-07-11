@@ -13,7 +13,7 @@ let pageMap = {
 };
 //http://www.zxcs8.com/sort/28
 function getList(type, options, cb) {
-    if(!type){
+    if(!type || !pageMap[type]){
         return cb("找不到类型");
     }
     superagent
@@ -26,6 +26,7 @@ function getList(type, options, cb) {
             // 等待 code
             let $ = cheerio.load(res.text);
             // console.log(res.text);
+            let list = [];
             $("#plist").each((index, value) => {
                 value = $(value);
                 let title = value.find("dt").text();
@@ -39,10 +40,34 @@ function getList(type, options, cb) {
                 // console.log(title,desc,novelUrl)
 
                 if(!novel.url || !novel.title){
-                    return cb("小说参数错误");
+                    return console.warn("小说参数错误");
                 }
-                cb(novel);
+                list.push(novel);
             });
+            cb(0, list);
+        });
+}
+function getVote(novel, cb) {
+    let id = novel.url.replace("http://www.zxcs8.com/post/","");
+    let voteUrl = "http://www.zxcs8.com/content/plugins/cgz_xinqing/cgz_xinqing_action.php?action=show&id="+id+"&m="+Math.random();
+    superagent
+        .get(voteUrl)
+        .end((err, res) => {
+            if(err){
+                return cb(err);
+            }
+            // console.log(res.text);
+            let list = res.text.split(",");
+            if(list.length!=5){
+                return cb("投票类型数量有误");
+            }
+            novel.xianCao = parseInt(list[0]);
+            novel.liangCao = parseInt(list[1]);
+            novel.ganCao = parseInt(list[2]);
+            novel.kuCao = parseInt(list[3]);
+            novel.duCao = parseInt(list[4]);
+            cb(0, novel);
+            // let download = $("div.")
         });
 }
 function getRealDownloadUrl(novel, cb) {
@@ -99,7 +124,7 @@ function saveToLocal(novel, cb) {
 }
 
 function getDetail(novel, cb) {
-    request
+    superagent
         .get(novel.url)
         .end((err, res) => {
             if(err){
@@ -107,42 +132,15 @@ function getDetail(novel, cb) {
             }
             // 等待 code
             let $ = cheerio.load(res.text);
-            // console.log(res.text);
+            console.log(res.text);
+            cb(0)
             // let download = $("div.")
         });
 }
-// async.waterfall([
-//     // 获取列表
-//     function(cb) {
 //
-//     },
-//     // 获取详情
-//     function (novel, cb) {
-//         request
-//         .get(novel.url)
-//         .query()
-//         .end((err, res) => {
-//             if(err){
-//                 return cb(err);
-//             }
-//             // 等待 code
-//             let $ = cheerio.load(res.text);
-//             console.log(res.text);
-//         });
-//     }
-// ], function (err, result) {
-//     // result now equals 'done'
-//     if(err){
-//         return console.error(err);
-//     }
-//     console.info("爬取成功", pageMap.historyAndMilitary);
-// });
-// getList(pageMap.historyAndMilitary, null, function (err, novel) {
-//     console.log(err, novel);
-// })
-// let novel = { title: '《懒散初唐》（校对版全本）作者：北冥老鱼',
-//     url: 'http://www.zxcs8.com/post/11032',
-//     desc: '\n\n\n\n\n【TXT大小】：7.26 MB\n【内容简介】：　　武德五年，大唐初立，李渊呆在美女如云的后宫之中，忙着享受自己得来不易的胜利果实，李建成忙着稳固自己的太子之位，李世民忙着觊觎大哥的位子，武将们忙着打仗，文臣们忙着治国，商人们忙着与胡商做生意，农户们忙着开垦荒地……\n　　在这片繁忙之中，李休抱着墓碑在长安城外醒来，看着眼前的初唐气象，他...' };
+let novel = { title: '《懒散初唐》（校对版全本）作者：北冥老鱼',
+    url: 'http://www.zxcs8.com/post/11032',
+    desc: '\n\n\n\n\n【TXT大小】：7.26 MB\n【内容简介】：　　武德五年，大唐初立，李渊呆在美女如云的后宫之中，忙着享受自己得来不易的胜利果实，李建成忙着稳固自己的太子之位，李世民忙着觊觎大哥的位子，武将们忙着打仗，文臣们忙着治国，商人们忙着与胡商做生意，农户们忙着开垦荒地……\n　　在这片繁忙之中，李休抱着墓碑在长安城外醒来，看着眼前的初唐气象，他...' };
 // getRealDownloadUrl(novel
 //     ,function (err, novel) {
 //         if(err){
@@ -156,3 +154,19 @@ function getDetail(novel, cb) {
 //             console.info(novel.url,"===>",filePath);
 //         })
 //     });
+// getDetail(novel, (err) => {
+//     if(err){
+//         return console.error(err);
+//     }
+// })
+getVote(novel, (err, novel) => {
+    if(err){
+        return console.error(err);
+    }
+    console.info(novel);
+})
+
+exports.saveToLocal = saveToLocal;
+exports.getRealDownloadUrl = getRealDownloadUrl;
+exports.getList = getList;
+exports.getVote = getVote;
