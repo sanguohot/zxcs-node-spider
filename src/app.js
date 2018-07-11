@@ -2,7 +2,9 @@ let superagent = require("superagent");
 let request = require("request");
 let cheerio = require("cheerio");
 let async = require("async");
+let path = require("path");
 let fs = require("fs");
+let rar = require("./rar");
 let crypto = require("./crypto");
 let fse = require("fs-extra");
 // let proxy = process.env.http_proxy || 'https://39.135.35.18:80';
@@ -10,9 +12,12 @@ let pageMap = {
     "historyAndMilitary":"http://www.zxcs8.com/sort/28"
 };
 //http://www.zxcs8.com/sort/28
-function getList(url, options, cb) {
+function getList(type, options, cb) {
+    if(!type){
+        return cb("找不到类型");
+    }
     superagent
-        .get(pageMap["historyAndMilitary"])
+        .get(pageMap[type])
         .query()
         .end((err, res) => {
             if(err){
@@ -74,14 +79,16 @@ function saveToLocal(novel, cb) {
             // console.log(info.stargazers_count + " Stars");
             // console.log(info.forks_count + " Forks");
             let buf = Buffer.from(body, "utf8");
-            let filePath = './data/'+crypto.md5Encrypt(buf);
+            let filePath = path.join(process.cwd(), "./data/rar/"+crypto.md5Encrypt(buf));
             fse.ensureFileSync(filePath);
             fs.writeFile(filePath, buf, (err) => {
-                if (err) {
-                    return cb(err);
-                }
-                console.log(filePath, 'The file has been saved!');
-                cb(0,filePath);
+                rar.unrarFile(filePath, (err) => {
+                    if (err) {
+                        return cb(err);
+                    }
+                    console.log(filePath, 'The file has been saved and unrar!');
+                    cb(0,filePath);
+                });
             });
         }else {
             return cb(error||response.statusCode);
@@ -133,19 +140,19 @@ function getDetail(novel, cb) {
 // getList(pageMap.historyAndMilitary, null, function (err, novel) {
 //     console.log(err, novel);
 // })
-let novel = { title: '《懒散初唐》（校对版全本）作者：北冥老鱼',
-    url: 'http://www.zxcs8.com/post/11032',
-    desc: '\n\n\n\n\n【TXT大小】：7.26 MB\n【内容简介】：　　武德五年，大唐初立，李渊呆在美女如云的后宫之中，忙着享受自己得来不易的胜利果实，李建成忙着稳固自己的太子之位，李世民忙着觊觎大哥的位子，武将们忙着打仗，文臣们忙着治国，商人们忙着与胡商做生意，农户们忙着开垦荒地……\n　　在这片繁忙之中，李休抱着墓碑在长安城外醒来，看着眼前的初唐气象，他...' };
-getRealDownloadUrl(novel
-    ,function (err, novel) {
-        if(err){
-            return console.error(err);
-        }
-        console.log(novel)
-        saveToLocal(novel, function (err, filePath) {
-            if(err){
-                return console.error(err);
-            }
-            console.info(novel.url,"===>",filePath);
-        })
-    });
+// let novel = { title: '《懒散初唐》（校对版全本）作者：北冥老鱼',
+//     url: 'http://www.zxcs8.com/post/11032',
+//     desc: '\n\n\n\n\n【TXT大小】：7.26 MB\n【内容简介】：　　武德五年，大唐初立，李渊呆在美女如云的后宫之中，忙着享受自己得来不易的胜利果实，李建成忙着稳固自己的太子之位，李世民忙着觊觎大哥的位子，武将们忙着打仗，文臣们忙着治国，商人们忙着与胡商做生意，农户们忙着开垦荒地……\n　　在这片繁忙之中，李休抱着墓碑在长安城外醒来，看着眼前的初唐气象，他...' };
+// getRealDownloadUrl(novel
+//     ,function (err, novel) {
+//         if(err){
+//             return console.error(err);
+//         }
+//         console.log(novel)
+//         saveToLocal(novel, function (err, filePath) {
+//             if(err){
+//                 return console.error(err);
+//             }
+//             console.info(novel.url,"===>",filePath);
+//         })
+//     });
