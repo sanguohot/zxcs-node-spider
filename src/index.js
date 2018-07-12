@@ -17,7 +17,7 @@ spider.getMaxPage(type, (err, max) => {
     let count = 0;
     let list = [];
     async.whilst(
-        () => { return count < max; },
+        () => { return count++ < max; },
         (cb) => {
             async.waterfall([
                 (cb) => {
