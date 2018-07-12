@@ -6,7 +6,7 @@
     "console-stamp": "^0.2.6",
     "fs-extra": "^6.0.1",
     "http-proxy": "^1.17.0",
-    "mysql": "^2.15.0",
+    "mysql": "mysqljs/mysql",
     "request": "^2.87.0",
     "superagent": "^3.8.3"
   }

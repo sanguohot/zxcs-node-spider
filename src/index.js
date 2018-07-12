@@ -45,7 +45,7 @@ spider.getMaxPage(type, (err, max) => {
                             },
                             (novel, cb) => {
                                 //一分钟下载一本，不要太快
-                                setTimeout(cb, 60000);
+                                setTimeout(cb, 20000);
                                 // 解压rar文件
                                 // let filePath = path.join(process.cwd(), "./data/rar/"+novel.novelHash);
                                 // rar.unrarFile(filePath, cb);

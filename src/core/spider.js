@@ -140,7 +140,7 @@ function saveToLocal(novel, cb) {
             let filePath = path.join(process.cwd(), "./data/rar/"+novelHash);
             fse.ensureFileSync(filePath);
             fs.writeFile(filePath, buf, (err) => {
-                console.log(filePath, 'The file has been saved!');
+                // console.log(filePath, 'The file has been saved!');
                 novel.novelHash = novelHash;
                 novel.size = buf.length;
                 cb(0,novel);
