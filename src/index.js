@@ -7,6 +7,54 @@ require('console-stamp')(console, {
     label:true,
     pattern: 'yyyy-mm-dd HH:MM:ss.l'
 });
+function beginNovelWorkPipe(novel, cb) {
+    async.waterfall([
+        (cb) => {
+            // 获取基本信息以及下载地址
+            spider.getRealDownloadUrl(novel, cb);
+        },
+        (novel, cb) => {
+            // 获取仙草、粮草、枯草、干草、毒草投票
+            spider.getVote(novel, cb);
+        },
+        (novel, cb) => {
+            // 下载保存到本地
+            spider.saveToLocal(novel, cb);
+        },
+        (novel, cb) => {
+            // 信息写入mysql
+            spider.saveToMysql(novel, cb);
+        },
+        (novel, cb) => {
+            //一分钟下载一本，不要太快
+            setTimeout(cb, 20000);
+            // 解压rar文件
+            // let filePath = path.join(process.cwd(), "./data/rar/"+novel.novelHash);
+            // rar.unrarFile(filePath, cb);
+        }
+    ], (err) => {
+        if(err){
+            console.error(err);
+        }
+        // 这里哪怕出错都不退出，而是继续循环
+        cb(0);
+    });
+}
+
+function processList(list, cb) {
+    async.mapLimit(list, 1, (novel, cb) => {
+        console.info(type, "===>", novel.title, novel.url);
+        spider.checkIdIsExist(novel.fileId, (err, isExist) => {
+            if(err){
+                return cb(err);
+            }
+            if(isExist){
+                return cb(0);
+            }
+            beginNovelWorkPipe(novel, cb);
+        });
+    },cb);
+}
 spider.getMaxPage(type, (err, max) => {
     if(err){
         return console.error(type, "===>", err);
@@ -23,38 +71,8 @@ spider.getMaxPage(type, (err, max) => {
                 (cb) => {
                     spider.getList("historyAndMilitary", {page:count}, cb);
                 },
-                (list, cb) => {
-                    async.mapLimit(list, 1, (novel, cb) => {
-                        console.info(type, "===>", novel.title, novel.url);
-                        async.waterfall([
-                            (cb) => {
-                                // 获取基本信息以及下载地址
-                                spider.getRealDownloadUrl(novel, cb);
-                            },
-                            (novel, cb) => {
-                                // 获取仙草、粮草、枯草、干草、毒草投票
-                                spider.getVote(novel, cb);
-                            },
-                            (novel, cb) => {
-                                // 下载保存到本地
-                                spider.saveToLocal(novel, cb);
-                            },
-                            (novel, cb) => {
-                                // 信息写入mysql
-                                spider.saveToMysql(novel, cb);
-                            },
-                            (novel, cb) => {
-                                //一分钟下载一本，不要太快
-                                setTimeout(cb, 20000);
-                                // 解压rar文件
-                                // let filePath = path.join(process.cwd(), "./data/rar/"+novel.novelHash);
-                                // rar.unrarFile(filePath, cb);
-                            }
-                        ], cb);
-                    },cb);
-                }
+                processList
             ], cb);
-
         },
         (err, n) => {
             // 5 seconds have passed, n = 5

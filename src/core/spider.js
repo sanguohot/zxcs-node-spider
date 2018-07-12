@@ -71,16 +71,18 @@ function getList(type, options, cb) {
                 if(!novel.url || !novel.title){
                     return console.warn("小说参数错误");
                 }
+                let id = novel.url.replace("http://www.zxcs8.com/post/","");
+                novel.fileId = id;
                 list.push(novel);
             });
             cb(0, list);
         });
 }
 function getVote(novel, cb) {
-    if(!novel || !novel.url){
-        return console.warn("小说参数错误");
+    if(!novel || !novel.url || !novel.fileId){
+        return cb("小说参数错误");
     }
-    let id = novel.url.replace("http://www.zxcs8.com/post/","");
+    let id = novel.fileId;
     let voteUrl = "http://www.zxcs8.com/content/plugins/cgz_xinqing/cgz_xinqing_action.php?action=show&id="+id+"&m="+Math.random();
     superagent
         .get(voteUrl)
@@ -103,7 +105,10 @@ function getVote(novel, cb) {
         });
 }
 function getRealDownloadUrl(novel, cb) {
-    let id = novel.url.replace("http://www.zxcs8.com/post/","");
+    if(!novel || !novel.url || !novel.fileId){
+        return cb("小说参数错误");
+    }
+    let id = novel.fileId;
     let downloadUrl = "http://www.zxcs8.com/download.php?id="+id;
     superagent
         .get(downloadUrl)
@@ -156,6 +161,7 @@ function saveToLocal(novel, cb) {
 function saveToMysql(novel, cb) {
     let insertSql = "insert into tbl_novel (" +
         "novel_hash, " +
+        "file_id," +
         "type," +
         "size," +
         "title," +
@@ -169,6 +175,7 @@ function saveToMysql(novel, cb) {
         ") values ";
     let insertData = [
         novel.novelHash,
+        novel.fileId,
         novel.type,
         novel.size,
         novel.title,
@@ -180,7 +187,7 @@ function saveToMysql(novel, cb) {
         novel.duCao,
         new Date().getTime()
     ];
-    insertSql += mysql.escape([insertData])+" on duplicate key update time=VALUES(time)";
+    insertSql += mysql.escape([insertData])+" on duplicate key update time=VALUES(time), file_id=VALUES(file_id)";
     mysql.query(insertSql, (err) => {
         if(err){
             return cb(err);
@@ -189,6 +196,20 @@ function saveToMysql(novel, cb) {
     });
 }
 
+function checkIdIsExist(fileId, cb) {
+    let sql = "select count(*) as cnt from tbl_novel where file_id="+parseInt(fileId);
+    mysql.query(sql, (err, ret) => {
+        if(err){
+            return cb(err);
+        }
+        // console.log(ret);
+        // cb(0, novel);
+        if(ret && ret[0] && ret[0].cnt){
+            return cb(0, true);
+        }
+        cb(0, false);
+    });
+}
 function getDetail(novel, cb) {
     superagent
         .get(novel.url)
@@ -238,3 +259,4 @@ exports.getList = getList;
 exports.getVote = getVote;
 exports.getMaxPage = getMaxPage;
 exports.saveToMysql = saveToMysql;
+exports.checkIdIsExist = checkIdIsExist;
