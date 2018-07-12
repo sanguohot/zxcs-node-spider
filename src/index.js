@@ -1,5 +1,7 @@
-let spider = require("core/spider");
+let spider = require("./core/spider");
 let async = require("async");
+let path = require("path");
+let rar = require("./core/rar");
 let type = process.env.type || "historyAndMilitary";
 spider.getMaxPage(type, (err, max) => {
     if(err){
@@ -16,6 +18,7 @@ spider.getMaxPage(type, (err, max) => {
             //数据库写入与遍历文件
             spider.getList("historyAndMilitary", {page:count}, (err, list) => {
                 async.mapLimit(list, 1, (novel, cb) => {
+                    console.info(type, "===>", novel);
                     async.waterfall([
                         (cb) => {
                             // 获取基本信息以及下载地址
@@ -32,6 +35,12 @@ spider.getMaxPage(type, (err, max) => {
                         (novel, cb) => {
                             // 信息写入mysql
                             spider.saveToMysql(novel, cb);
+                        },
+                        (novel, cb) => {
+                            // 解压rar文件
+                            // let filePath = path.join(process.cwd(), "./data/rar/"+novel.novelHash);
+                            // rar.unrarFile(filePath, cb);
+                            cb();
                         }
                     ], cb);
                 },cb);

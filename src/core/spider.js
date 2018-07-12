@@ -4,7 +4,6 @@ let cheerio = require("cheerio");
 let async = require("async");
 let path = require("path");
 let fs = require("fs");
-let rar = require("./rar");
 let crypto = require("./crypto");
 let mysql = require("./mysql");
 let fse = require("fs-extra");
@@ -64,7 +63,8 @@ function getList(type, options, cb) {
                 let novel = {
                     title: title,
                     url: url,
-                    desc: desc
+                    desc: desc,
+                    type: type
                 }
                 // console.log(title,desc,novelUrl)
 
@@ -140,15 +140,10 @@ function saveToLocal(novel, cb) {
             let filePath = path.join(process.cwd(), "./data/rar/"+novelHash);
             fse.ensureFileSync(filePath);
             fs.writeFile(filePath, buf, (err) => {
-                rar.unrarFile(filePath, (err) => {
-                    if (err) {
-                        return cb(err);
-                    }
-                    console.log(filePath, 'The file has been saved and unrar!');
-                    novel.novelHash = novelHash;
-                    novel.size = buf.length;
-                    cb(0,novel);
-                });
+                console.log(filePath, 'The file has been saved!');
+                novel.novelHash = novelHash;
+                novel.size = buf.length;
+                cb(0,novel);
             });
         }else {
             return cb(error||response.statusCode);
@@ -185,8 +180,13 @@ function saveToMysql(novel, cb) {
         novel.duCao,
         new Date().getTime()
     ];
-    insertSql += mysql.escape([insertData]);
-    mysql.query(insertSql, cb);
+    insertSql += mysql.escape([insertData])+" on duplicate key update time=VALUES(time)";
+    mysql.query(insertSql, (err) => {
+        if(err){
+            return cb(err);
+        }
+        cb(0, novel);
+    });
 }
 
 function getDetail(novel, cb) {

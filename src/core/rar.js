@@ -11,7 +11,7 @@ function unrarFile(filePath, cb) {
             cb();
         })
         .catch(err => {
-            console.error(filePath, "===>", err);
+            console.error(filePath, "===>", dir, err);
             cb(err);
         })
 }
