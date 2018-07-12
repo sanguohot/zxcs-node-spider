@@ -1,6 +1,6 @@
 const os = require("os");
 const gprop = require('../etc/'+(os.platform()=="linux"?"config-linux":"config")).prop;
-var mysql = require('mysql');
+const mysql = require('mysql');
 var pool  = mysql.createPool({
     connectionLimit : gprop.db_pool,
     host            : gprop.db_host,
