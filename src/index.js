@@ -3,6 +3,10 @@ let async = require("async");
 let path = require("path");
 let rar = require("./core/rar");
 let type = process.env.type || "historyAndMilitary";
+require('console-stamp')(console, {
+    label:true,
+    pattern: 'yyyy-mm-dd HH:MM:ss.l'
+});
 spider.getMaxPage(type, (err, max) => {
     if(err){
         return console.error(type, "===>", err);
@@ -21,26 +25,22 @@ spider.getMaxPage(type, (err, max) => {
                 },
                 (list, cb) => {
                     async.mapLimit(list, 1, (novel, cb) => {
-                        console.info(type, "===>", novel);
+                        console.info(type, "===>", novel.title, novel.url);
                         async.waterfall([
                             (cb) => {
                                 // 获取基本信息以及下载地址
-                                console.info("开始获取投票", novel.title);
                                 spider.getRealDownloadUrl(novel, cb);
                             },
                             (novel, cb) => {
                                 // 获取仙草、粮草、枯草、干草、毒草投票
-                                console.info("开始获取投票", novel.title);
                                 spider.getVote(novel, cb);
                             },
                             (novel, cb) => {
                                 // 下载保存到本地
-                                console.info("开始保存到本地", novel.title);
                                 spider.saveToLocal(novel, cb);
                             },
                             (novel, cb) => {
                                 // 信息写入mysql
-                                console.info("开始写入数据库", novel.title);
                                 spider.saveToMysql(novel, cb);
                             },
                             (novel, cb) => {
