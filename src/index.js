@@ -13,18 +13,12 @@ function beginNovelWorkPipe(novel, cb) {
             // 获取基本信息以及下载地址
             spider.getRealDownloadUrl(novel, cb);
         },
-        (novel, cb) => {
-            // 获取仙草、粮草、枯草、干草、毒草投票
-            spider.getVote(novel, cb);
-        },
-        (novel, cb) => {
-            // 下载保存到本地
-            spider.saveToLocal(novel, cb);
-        },
-        (novel, cb) => {
-            // 信息写入mysql
-            spider.saveToMysql(novel, cb);
-        },
+        // 获取仙草、粮草、枯草、干草、毒草投票
+        spider.getVote,
+        // 下载保存到本地
+        spider.saveToLocal,
+        // 信息写入mysql
+        spider.saveToMysql,
         (novel, cb) => {
             //一分钟下载一本，不要太快
             setTimeout(cb, 20000);
@@ -69,7 +63,7 @@ spider.getMaxPage(type, (err, max) => {
         (cb) => {
             async.waterfall([
                 (cb) => {
-                    spider.getList("historyAndMilitary", {page:count}, cb);
+                    spider.getList(type, {page:count}, cb);
                 },
                 processList
             ], cb);
