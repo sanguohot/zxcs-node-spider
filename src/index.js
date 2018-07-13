@@ -2,7 +2,7 @@ let spider = require("./core/spider");
 let async = require("async");
 let path = require("path");
 let rar = require("./core/rar");
-let type = process.env.type || "historyAndMilitary";
+let type = process.env.type || "swordsmanAndGod";
 require('console-stamp')(console, {
     label:true,
     pattern: 'yyyy-mm-dd HH:MM:ss.l'
@@ -74,6 +74,7 @@ spider.getMaxPage(type, (err, max) => {
                 return console.error(type, "===>", err);
             }
             console.info(type, "===>", "下载完成，总页数",max);
+            process.exit();
         }
     );
 });
