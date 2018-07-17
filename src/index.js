@@ -2,7 +2,7 @@ let spider = require("./core/spider");
 let async = require("async");
 let path = require("path");
 let rar = require("./core/rar");
-let type = process.env.type || "swordsmanAndGod";
+let type = process.env.type || "publishAndGirl";
 require('console-stamp')(console, {
     label:true,
     pattern: 'yyyy-mm-dd HH:MM:ss.l'

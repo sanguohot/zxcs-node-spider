@@ -18,7 +18,10 @@ let pageMap = {
     "god":"http://www.zxcs8.com/sort/37",
     "fantasy0And1":"http://www.zxcs8.com/sort/26",
     "fantasy0":"http://www.zxcs8.com/sort/38",
-    "fantasy1":"http://www.zxcs8.com/sort/39"
+    "fantasy1":"http://www.zxcs8.com/sort/39",
+    "publishAndGirl":"http://www.zxcs8.com/sort/34",
+    "publish":"http://www.zxcs8.com/sort/46",
+    "girl":"http://www.zxcs8.com/sort/47"
 };
 //http://www.zxcs8.com/sort/28
 function getMaxPage(type, cb) {
